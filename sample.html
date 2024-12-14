@@ -17,11 +17,9 @@
 <script src="./node_modules/monaco-editor/min/vs/loader.js"></script>
 <script src="./node_modules/monaco-editor/min/vs/editor/editor.main.nls.js"></script>
 <script src="./node_modules/monaco-editor/min/vs/editor/editor.main.js"></script>
-<script src="./node_modules/monaco-markdown/umd/monaco-markdown.js"></script>
-
 <script>
     var editor = monaco.editor.create(document.getElementById('container'), {
-        language: 'markdown-math',
+        language: 'markdown',
         value: `# Header 1
 Some content
 
@@ -50,7 +48,7 @@ Final content`,
 //monacoにmarkdown関連の設定を追加する
 
 // Markdown の Folding Range Provider を登録
-monaco.languages.registerFoldingRangeProvider("markdown-math", {
+monaco.languages.registerFoldingRangeProvider("markdown", {
     provideFoldingRanges: function (model, context, token) {
         const lines = model.getLinesContent(); // ドキュメントの各行を取得
         const ranges = [];
