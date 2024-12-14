@@ -45,8 +45,6 @@ Final content`,
         var extension = new MonacoMarkdown.MonacoMarkdownExtension()
         extension.activate(editor)
     });
-//monacoにmarkdown関連の設定を追加する
-
 // Markdown の Folding Range Provider を登録
 monaco.languages.registerFoldingRangeProvider("markdown", {
     provideFoldingRanges: function (model, context, token) {
