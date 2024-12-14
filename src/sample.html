@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="../node_modules/monaco-editor/min/vs/editor/editor.main.css">
+</head>
+<body>
+
+<h2>Monaco Markdown</h2>
+<!--<embed id="text" src="sample.md"/>-->
+
+<div id="container" style="width:800px;height:400px;border:1px solid grey">
+</div>
+
+<script>var require = { paths: { 'vs': '../node_modules/monaco-editor/min/vs' } };</script>
+<script src="../node_modules/monaco-editor/min/vs/loader.js"></script>
+<script src="../node_modules/monaco-editor/min/vs/editor/editor.main.nls.js"></script>
+<script src="../node_modules/monaco-editor/min/vs/editor/editor.main.js"></script>
+<script src="../node_modules/monaco-markdown/umd/monaco-markdown.js"></script>
+
+<script>
+    var editor = monaco.editor.create(document.getElementById('container'), {
+        language: 'markdown-math',
+        value: `# Header 1
+Some content
+
+## Header 2
+More content
+
+### Header 3
+Even more content
+
+# Another Header 1
+Some more content
+
+## Another Header 2
+Final content`,
+        folding: "true", // コードの折り畳みを有効化
+        renderLineHighlight: "all", // 現在の行のハイライトを有効化
+        scrollBeyondLastLine: "false", // スクロールで最後の行を超えない
+        overviewRulerBorder: "false", // エディターの右側の枠線を非表示
+        wordWrap: "on", // エディタ内で右端で改行を有効化
+        fontSize: 14,
+    });
+    require(['MonacoMarkdown'], function(MonacoMarkdown) {
+        var extension = new MonacoMarkdown.MonacoMarkdownExtension()
+        extension.activate(editor)
+    });
+//monacoにmarkdown関連の設定を追加する
+
+// Markdown の Folding Range Provider を登録
+monaco.languages.registerFoldingRangeProvider("markdown-math", {
+    provideFoldingRanges: function (model, context, token) {
+        const lines = model.getLinesContent(); // ドキュメントの各行を取得
+        const ranges = [];
+        const headerStack = []; // 見出し階層のスタック
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const match = line.match(/^(#+)\s/); // Markdown の見出しに一致 (#, ##, ###)
+
+            if (match) {
+                const level = match[1].length; // '#' の数で見出しレベルを判定
+                const start = i; // 現在の行
+
+                // スタックを調整して階層を管理
+                while (headerStack.length > 0 && headerStack[headerStack.length - 1].level >= level) {
+                    const popped = headerStack.pop(); // スタックから要素を取り出す
+                    ranges.push({
+                        start: popped.start + 1, // 折り畳み範囲の開始行 (1-indexed)
+                        end: i, // 現在の行が終了行 (0-indexed)
+                        kind: monaco.languages.FoldingRangeKind.Region, // 任意の範囲
+                    });
+                }
+
+                // 現在の見出しをスタックに追加
+                headerStack.push({ level, start });
+            }
+        }
+
+        // 残ったスタックを処理 (ファイル末尾まで折り畳み)
+        while (headerStack.length > 0) {
+            const popped = headerStack.pop();
+            ranges.push({
+                start: popped.start + 1,
+                end: lines.length,
+                kind: monaco.languages.FoldingRangeKind.Region,
+            });
+        }
+
+        return ranges;
+    },
+});
+
+
+</script>
+
+</body>
+</html>
